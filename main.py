@@ -8,7 +8,7 @@ try:
 except ImportError:
     print('otenv module is not found, not to install: pip install dotenv')
     exit()
-    
+
 load_dotenv()
 
 
@@ -16,8 +16,8 @@ app = Flask(__name__)
 
 # Initialize parser (from openai_demo.ipynb, adapt as needed)
 parser = VisionParser(
-    model_name="gpt-4o-mini",  # Replace with your actual model name if different
-    api_key=os.environ.get("OPENAI_API_KEY"), # Get API key from environment variable
+    model_name="gpt-4o",  # Replace with your actual model name if different
+    api_key=os.environ.get("OPENAI_API_KEY"),  # Get API key from environment variable
     temperature=0.2,
     top_p=0.4,
     max_output_tokens=8192,
@@ -51,6 +51,8 @@ def process_file():
 
         if temp_path.lower().endswith(('.pdf')):
             markdown_pages = parser.convert_file(temp_path)
+            print('步骤一')
+            print(markdown_pages)
         elif temp_path.lower().endswith(('.jpg', '.jpeg', '.png')):
             markdown_pages = parser.convert_image(temp_path)
         else:
@@ -72,4 +74,4 @@ def process_file():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)
