@@ -20,12 +20,13 @@ parser = VisionParser(
     api_key=os.environ.get("OPENAI_API_KEY"),  # Get API key from environment variable
     temperature=0.2,
     top_p=0.4,
-    max_output_tokens=8192,
+    max_tokens=8192,
     image_mode="url",
     detailed_extraction=True,
     enable_concurrency=True,
 )
 
+# print(os.environ.get("OPENAI_API_KEY"))
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -50,9 +51,9 @@ def process_file():
         logging.debug(f"Request data: {request.data}")
 
         if temp_path.lower().endswith(('.pdf')):
-            markdown_pages = parser.convert_file(temp_path)
+            markdown_pages = parser.convert_pdf(temp_path)
             print('步骤一')
-            print(markdown_pages)
+            # print(markdown_pages)
         elif temp_path.lower().endswith(('.jpg', '.jpeg', '.png')):
             markdown_pages = parser.convert_image(temp_path)
         else:

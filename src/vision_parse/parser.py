@@ -18,7 +18,7 @@ nest_asyncio.apply()
 class PDFPageConfig(BaseModel):
     """Configuration settings for PDF page conversion."""
 
-    dpi: int = 150  # Resolution for PDF to image conversion (72-300 recommended)
+    dpi: int = 400  # Resolution for PDF to image conversion
     color_space: str = "RGB"  # Color mode for image output
     include_annotations: bool = True  # Include PDF annotations in conversion
     preserve_transparency: bool = False  # Control alpha channel in output
@@ -42,14 +42,17 @@ class VisionParser:
     def __init__(
         self,
         page_config: Optional[PDFPageConfig] = None,
-        model_name: str = "gpt-4o-mini",
+        model_name: str = "llama3.2-vision:11b",
         api_key: Optional[str] = None,
         temperature: float = 0.7,
         top_p: float = 0.7,
+        ollama_config: Optional[Dict] = None,
         openai_config: Optional[Dict] = None,
+        gemini_config: Optional[Dict] = None,
         image_mode: Literal["url", "base64", None] = None,
         custom_prompt: Optional[str] = None,
         detailed_extraction: bool = False,
+        extraction_complexity: bool = False,  # Deprecated Parameter
         enable_concurrency: bool = False,
         **kwargs: Any,
     ):
@@ -58,13 +61,27 @@ class VisionParser:
         self.device, self.num_workers = get_device_config()
         self.enable_concurrency = enable_concurrency
 
+        if extraction_complexity:
+            if not detailed_extraction:
+                detailed_extraction = True
+                warnings.warn(
+                    "`extraction_complexity` is deprecated, and was renamed to `detailed_extraction`.",
+                    DeprecationWarning,
+                )
+
+            else:
+                raise ValueError(
+                    "`extraction_complexity` is deprecated, and was renamed to `detailed_extraction`. Please use `detailed_extraction` instead."
+                )
 
         self.llm = LLM(
             model_name=model_name,
             api_key=api_key,
             temperature=temperature,
             top_p=top_p,
+            ollama_config=ollama_config,
             openai_config=openai_config,
+            gemini_config=gemini_config,
             image_mode=image_mode,
             detailed_extraction=detailed_extraction,
             custom_prompt=custom_prompt,
@@ -122,63 +139,24 @@ class VisionParser:
         finally:
             await asyncio.sleep(0.5)
 
-    def convert_file(self, file_path: Union[str, Path]) -> List[str]:
-        """Convert the given file (PDF or image) to markdown text.
-        
-        Args:
-            file_path: Path to PDF or image file
-            enable_concurrency: If True, processes PDF pages in parallel batches
-            num_workers: Number of concurrent workers for PDF processing
-            
-        Returns:
-            List of markdown strings (one per page/image)
-            
-        Note:
-            - Concurrency is only supported for PDF files
-            - Image files are processed as single pages
-            - Batch size is determined by num_workers
-            
-        Image Processing Steps:
-            1. Validate file exists and is supported image format
-            2. Create temporary PDF document with single page
-            3. Insert image into page at full resolution
-            4. Convert page to base64-encoded PNG
-            5. Process image through LLM pipeline
-            6. Return markdown text as single-element list
-            
-        Supported Image Formats:
-            - PNG (.png)
-            - JPEG (.jpg, .jpeg)
-        """
-        file_path = Path(file_path)
+    def convert_pdf(self, pdf_path: Union[str, Path]) -> List[str]:
+        """Convert all pages in the given PDF file to markdown text."""
+        pdf_path = Path(pdf_path)
         converted_pages = []
 
-        if not file_path.exists() or not file_path.is_file():
-            raise FileNotFoundError(f"File not found: {file_path}")
+        if not pdf_path.exists() or not pdf_path.is_file():
+            raise FileNotFoundError(f"PDF file not found: {pdf_path}")
 
-        if file_path.suffix.lower() not in [".pdf", ".png", ".jpg", ".jpeg"]:
-            raise UnsupportedFileError(f"Unsupported file type: {file_path}")
+        if pdf_path.suffix.lower() != ".pdf":
+            raise UnsupportedFileError(f"File is not a PDF: {pdf_path}")
 
         try:
-            # Handle image files
-            if file_path.suffix.lower() in [".png", ".jpg", ".jpeg"]:
-                # Create a single-page document from the image
-                doc = fitz.open()
-                page = doc.new_page()
-                rect = page.rect
-                page.insert_image(rect, filename=str(file_path))
-                
-                # Process the single page
-                text = asyncio.run(self._convert_page(page, 0))
-                return [text]
-            
-            # Handle PDF files
-            with fitz.open(file_path) as pdf_document:
+            with fitz.open(pdf_path) as pdf_document:
                 total_pages = pdf_document.page_count
 
                 with tqdm(
                     total=total_pages,
-                    desc="Converting pages into markdown format",
+                    desc="Converting pages in PDF file into markdown format",
                 ) as pbar:
                     if self.enable_concurrency:
                         # Process pages in batches based on num_workers

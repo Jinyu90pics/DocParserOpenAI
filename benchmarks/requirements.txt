@@ -1,0 +1,4 @@
+markitdown
+nltk
+python-Levenshtein
+vision-parse
