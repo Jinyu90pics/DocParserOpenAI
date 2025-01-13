@@ -205,12 +205,3 @@ class LLM:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10),
     )
-    self.aclient = openai.AsyncOpenAI(
-                        api_key=self.api_key,
-                        base_url=self.openai_config.get("OPENAI_BASE_URL", None),
-                        max_retries=self.openai_config.get("OPENAI_MAX_RETRIES", 3),
-                        timeout=self.openai_config.get("OPENAI_TIMEOUT", 240.0),
-                        default_headers=self.openai_config.get(
-                            "OPENAI_DEFAULT_HEADERS", None
-                        ),
-                    )
