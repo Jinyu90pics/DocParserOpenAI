@@ -205,26 +205,12 @@ class LLM:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10),
     )
-    async def _openai(
-        self, base64_encoded: str, prompt: str, structured: bool = False
-    ) -> Any:
-        """Process base64-encoded image through OpenAI vision models."""
-        try:
-            # This is a placeholder for how you'd send your request to OpenAI.
-            # Officially, OpenAI's Python library doesn't yet support direct image+prompt combos.
-            # So, you'd adapt accordingly or use their new endpoints if/when available.
-
-            # For demonstration, we return a "simulated" response:
-            simulated_response_text = f"<Simulated OpenAI response for prompt={prompt}>"
-
-            # If the call was structured, you'd parse JSON into ImageDescription or similar.
-            # For now, we just return the text (cleaned of any triple backticks).
-            return re.sub(
-                r"```(?:markdown)?\n(.*?)\n```",
-                r"\1",
-                simulated_response_text,
-                flags=re.DOTALL,
-            )
-
-        except Exception as e:
-            raise LLMError(f"OpenAI Model processing failed: {str(e)}")
+    self.aclient = openai.AsyncOpenAI(
+                        api_key=self.api_key,
+                        base_url=self.openai_config.get("OPENAI_BASE_URL", None),
+                        max_retries=self.openai_config.get("OPENAI_MAX_RETRIES", 3),
+                        timeout=self.openai_config.get("OPENAI_TIMEOUT", 240.0),
+                        default_headers=self.openai_config.get(
+                            "OPENAI_DEFAULT_HEADERS", None
+                        ),
+                    )
