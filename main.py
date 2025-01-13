@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 # Initialize parser (from openai_demo.ipynb, adapt as needed)
 parser = VisionParser(
-    model_name="gpt-4o",  # Replace with your actual model name if different
+    model_name="gpt-4o-mini",  # Replace with your actual model name if different
     api_key=os.environ.get("OPENAI_API_KEY"),  # Get API key from environment variable
     temperature=0.2,
     top_p=0.4,
