@@ -105,8 +105,7 @@ class LLM:
                         default_headers=self.openai_config.get(
                             "OPENAI_DEFAULT_HEADERS", None
                         ),
-                    )
-            pass
+            )
         except Exception as e:
             raise LLMError(f"Unable to initialize OpenAI client: {str(e)}")
 
