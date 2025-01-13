@@ -1,4 +1,4 @@
-const CLOUD_FUNCTION_URL = "http://127.0.0.1:5000/"; // Replace with your local server URL
+const CLOUD_FUNCTION_URL = "http://127.0.0.1:8080/"; // Replace with your local server URL
 const SHARED_DRIVE_FOLDER_ID = "130qg95OYnWpV6tN9u0hy9nCZmSgGfHAr"; // Replace with your folder ID
 const MAX_PAGES_PER_REQUEST = 16;
 
