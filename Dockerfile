@@ -6,5 +6,5 @@ ENV OPENAI_API_KEY="AIxxxx"
 COPY . /app/
 RUN pip install -r requirements.txt
 RUN pip install 'vision-parse[openai]'
-EXPOSE 5000
+EXPOSE 8080
 CMD ["python3", "main.py"] 
