@@ -18,7 +18,7 @@ nest_asyncio.apply()
 class PDFPageConfig(BaseModel):
     """Configuration settings for PDF page conversion."""
 
-    dpi: int = 400  # Resolution for PDF to image conversion
+    dpi: int = 150  # Resolution for PDF to image conversion
     color_space: str = "RGB"  # Color mode for image output
     include_annotations: bool = True  # Include PDF annotations in conversion
     preserve_transparency: bool = False  # Control alpha channel in output
